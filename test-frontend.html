@@ -1,6 +1,19 @@
-<html><script src="jquery-1.7.1.min.js"></script><body>
+<html>
+<link rel='stylesheet' type='text/css' href='fullcalendar.css' /> 
+<script type='text/javascript' src='jquery-1.7.1.min.js'></script>
+<script type='text/javascript' src='jquery-ui-1.8.18.custom.min.js'></script>
+<script type='text/javascript' src='fullcalendar.min.js'></script>
+<body>
+  <div id="calendar"></div>
+  
 
   
-  
-  
-</body></html>
+</body><script>
+$(document).ready(function() {
+
+    $('#calendar').fullCalendar({
+        // your options here
+    });
+
+});
+</script></html>

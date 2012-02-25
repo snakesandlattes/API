@@ -10,15 +10,15 @@ from google.appengine.ext import db
 # Models.
 
 class Appointment(db.Model):
-    date=db.DateTimeProperty(required=True)
-    isWalkIn=db.BooleanProperty(required=True)
-    size=db.IntegerProperty(required=True)
-    name=db.StringProperty(required=True)
-    phone=db.PhoneNumberProperty(required=True)
-    email=db.EmailProperty(required=True)
-    remindSameDay=db.BooleanProperty()
-    remindSameWeek=db.BooleanProperty()
-    notes=db.StringProperty()
+    date=           db.DateTimeProperty(required=True)
+    isWalkIn=       db.BooleanProperty(required=True)
+    size=           db.IntegerProperty(required=True)
+    name=           db.StringProperty(required=True)
+    phone=          db.PhoneNumberProperty(required=True)
+    email=          db.EmailProperty(required=True)
+    remindSameDay=  db.BooleanProperty()
+    remindSameWeek= db.BooleanProperty()
+    notes=          db.StringProperty()
 
     def __str__(self):
         return  "Appointment for "+self.name+". A "+\
@@ -32,6 +32,11 @@ class Appointment(db.Model):
 
 ################################################################################
 # Controllers.
+
+'''
+Take a look at replacement for BlinkConnect interface here:
+http://arshaw.com/fullcalendar/
+'''
 
 class MainPage(webapp.RequestHandler):
     def get(self):
