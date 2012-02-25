@@ -11,9 +11,19 @@
 </body><script>
 $(document).ready(function() {
 
-    $('#calendar').fullCalendar({
-        // your options here
-    });
+  $('#calendar').fullCalendar({
+    events:{      
+      url:'http://localhost:8080/schedule/show/',
+      type:'POST',
+      data: {
+        API_KEY:'abc',
+        fromdate:1330110248388
+      },
+      error:function(){ alert('Schedule API error! Data not loaded!');},
+      color:'#eee',
+      textColor:'#000'
+    }
+  });
 
 });
 </script></html>

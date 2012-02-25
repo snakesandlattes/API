@@ -9,16 +9,24 @@ from google.appengine.ext import db
 ################################################################################
 # Models.
 
+class Customer(db.Model):
+    name=           db.StringProperty(required=True)
+    phone=          db.PhoneNumberProperty(required=True)
+    isCellphone=    db.BooleanProperty()
+    email=          db.EmailProperty(required=True)
+
 class Appointment(db.Model):
     date=           db.DateTimeProperty(required=True)
     isWalkIn=       db.BooleanProperty(required=True)
     size=           db.IntegerProperty(required=True)
     name=           db.StringProperty(required=True)
     phone=          db.PhoneNumberProperty(required=True)
+    isCellphone=    db.BooleanProperty()
     email=          db.EmailProperty(required=True)
     remindSameDay=  db.BooleanProperty()
     remindSameWeek= db.BooleanProperty()
     notes=          db.StringProperty()
+    estimatedTime=  db.IntegerProperty()
 
     def __str__(self):
         return  "Appointment for "+self.name+". A "+\
@@ -58,29 +66,25 @@ class ShowBooking(webapp.RequestHandler):
         a=Appointment.all()
         a.filter("date >=", datetime.datetime.fromtimestamp(fromdate))
         a.order("date")
-        results=a.fetch(5)
+        results=a.fetch(10)
         jsonAppointments=[]
         for r in results:
             jsonAppointments.append({
-                'date':int(time.mktime(r.date.timetuple())*1e3),
-                'iswalkin':r.isWalkIn,
-                'size':r.size,
-                'name':r.name,
-                'phone':r.phone,
-                'email':r.email,
-                'sameday':r.remindSameDay,
-                'sameweek':r.remindSameWeek,
-                'notes':r.notes
+                'id':       r.key().id(),
+                'title':    ("WALK-IN / " if r.isWalkIn else "RESERVATION / ")+\
+                            r.name+" / "+str(r.size),
+                'start':    int(time.mktime(r.date.timetuple())*1e3),
+                'editable': False                
             })
         self.response.out.write(json.dumps(jsonAppointments))
 
 '''
-http://localhost:8080/booking/try/?API_KEY=abc&size=5&iswalkin=true&name=Sonny Smith&phone=(141)124-4419&email=sunny@gmail.com&date=1330111248388
-http://localhost:8080/booking/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=1330119248388
-http://localhost:8080/booking/try/?API_KEY=abc&size=4&iswalkin=false&name=Jane Doe&phone=(461)444-4444&email=jane@gmail.com&date=1330121248388
+http://localhost:8080/schedule/try/?API_KEY=abc&size=5&iswalkin=true&name=Sonny Smith&phone=(141)124-4419&email=sunny@gmail.com&date=1330111248388
+http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=1330119248388
+http://localhost:8080/schedule/try/?API_KEY=abc&size=4&iswalkin=false&name=Jane Doe&phone=(461)444-4444&email=jane@gmail.com&date=1330121248388
 
-http://localhost:8080/booking/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(14fdfd123-4189&email=joe@home.com&date=1330119248388
-http://localhost:8080/booking/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=Fri Feb 24 2012 13:40:02 GMT-0500 (EST)
+http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(14fdfd123-4189&email=joe@home.com&date=1330119248388
+http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=Fri Feb 24 2012 13:40:02 GMT-0500 (EST)
 '''
 
 class TryBooking(webapp.RequestHandler):
@@ -103,7 +107,10 @@ class TryBooking(webapp.RequestHandler):
                       email=            GET('email'),
                       remindSameDay=    bool(GET('sameday')),
                       remindSameWeek=   bool(GET('sameweek')),
-                      notes=            GET('notes'))
+                      notes=            GET('notes'),
+                      isCellphone=      GET('iscellphone'),
+                      estimatedTime=    int(GET('estimatedtime'))                      
+                      )
         a.put()
         self.response.out.write(a)
 
