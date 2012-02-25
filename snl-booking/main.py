@@ -2,7 +2,7 @@
 import json
 import datetime
 import time
-from google.appengine.ext import webapp
+import webapp2
 from google.appengine.ext.webapp import util
 from google.appengine.ext import db
 
@@ -46,7 +46,7 @@ Take a look at replacement for BlinkConnect interface here:
 http://arshaw.com/fullcalendar/
 '''
 
-class MainPage(webapp.RequestHandler):
+class MainPage(webapp2.RequestHandler):
     def get(self):
         GET=self.request.get
         secretkey=GET('key')
@@ -58,7 +58,7 @@ http://localhost:8080/schedule/show/?API_KEY=abc&fromdate=1330110248388
 http://localhost:8080/schedule/show/?API_KEY=abc&fromdate=1330119248388
 '''
 
-class ShowBooking(webapp.RequestHandler):
+class ShowBooking(webapp2.RequestHandler):
     def get(self):
         GET=self.request.get
         if GET('API_KEY')!='abc': raise Exception("Invalid API key!")        
@@ -83,11 +83,15 @@ http://localhost:8080/schedule/try/?API_KEY=abc&size=5&iswalkin=true&name=Sonny 
 http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=1330119248388
 http://localhost:8080/schedule/try/?API_KEY=abc&size=4&iswalkin=false&name=Jane Doe&phone=(461)444-4444&email=jane@gmail.com&date=1330121248388
 
+http://snl-booking.appspot.com/schedule/try/?API_KEY=abc&size=5&iswalkin=true&name=Sonny Smith&phone=(141)124-4419&email=sunny@gmail.com&date=1330111248388
+http://snl-booking.appspot.com/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=1330119248388
+http://snl-booking.appspot.com/schedule/try/?API_KEY=abc&size=4&iswalkin=false&name=Jane Doe&phone=(461)444-4444&email=jane@gmail.com&date=1330121248388
+
 http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(14fdfd123-4189&email=joe@home.com&date=1330119248388
 http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=Fri Feb 24 2012 13:40:02 GMT-0500 (EST)
 '''
 
-class TryBooking(webapp.RequestHandler):
+class TryBooking(webapp2.RequestHandler):
     def get(self):
         GET=self.request.get
         if GET('API_KEY')!='abc': raise Exception("Invalid API key!")
@@ -116,14 +120,8 @@ class TryBooking(webapp.RequestHandler):
 
 ################################################################################
 
-application = webapp.WSGIApplication([
+app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/schedule/show/', ShowBooking),
     ('/schedule/try/', TryBooking),
 ], debug=True)
-
-def main():   
-    util.run_wsgi_app(application)
-
-if __name__ == '__main__':
-    main()

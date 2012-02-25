@@ -12,17 +12,16 @@
 $(document).ready(function() {
 
   $('#calendar').fullCalendar({
-    events:{      
-      url:'http://localhost:8080/schedule/show/',
-      type:'POST',
-      data: {
-        API_KEY:'abc',
-        fromdate:1330110248388
-      },
-      error:function(){ alert('Schedule API error! Data not loaded!');},
-      color:'#eee',
-      textColor:'#000'
-    }
+    url:'http://snl-booking.appspot.com/schedule/show/',
+    //url:'http://localhost:8080/schedule/show/',
+    type:'GET',
+    data: {
+      API_KEY:'abc',
+      fromdate:'1330110248388'
+    },
+    error:function(){ alert('Schedule API error! Data not loaded!');},
+    color:'#eee',
+    textColor:'#000'
   });
 
 });
