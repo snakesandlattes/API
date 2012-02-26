@@ -1,10 +1,49 @@
-<html>
-<link rel='stylesheet' type='text/css' href='fullcalendar.css' /> 
+<html><head>
+<style>
+  body  { font-family: arial; }
+  label { display:block; min-width: 120px; float: left; }
+  li    { list-style-type: none; line-height: 2.0; }
+</style>
 <script type='text/javascript' src='jquery-1.7.1.min.js'></script>
 <script type='text/javascript' src='jquery-ui-1.8.18.custom.min.js'></script>
-<script type='text/javascript' src='fullcalendar.min.js'></script>
-<body>
-  <input type='text' id='Name'
+</head><body>
+  <h2>A Simple Booking Demo</h2>
+  
+  <form id='booking'>
+  
+  <ul>
+  <li>
+  <label for='name'>Name</label>
+  <input type='text' name='name'/>
+  </li>
+  
+  <li>
+  <label for='email'>E-mail</label>
+  <input type='text' name='email'/><br/>
+  </li>
+  
+  <li>
+  <label for='phone'>Phone</label>
+  <input type='text' name='phone'/><br/>  
+  </li>
+  
+  <li>
+  <label for='iscellphone'>Is a cellphone.</label>
+  <input type='radio' name='iscellphone' value='true' selected /> Yes &mdash;
+  <input type='radio' name='iscellphone' value='false'/> No
+  </li>
+  
+  <li>
+  <label for='phone'>Phone</label>
+  </li>
+  
+  </ul>
+  
+  
+  <input type='reset' />
+  </form>
+  
+    
   
 </body><script>
 // Need this for the JSONP callback!
@@ -14,26 +53,5 @@ function ADDEVENTS(d){
 }
 
 $(document).ready(function() {
-
-  $('#calendar').fullCalendar({
-    
-    defaultView:'agendaWeek',   
-    
-    events: function(start, end, callback) {
-      $.ajax({
-        url: 'http://snl-booking.appspot.com/schedule/showrange/',
-        dataType: 'jsonp',
-        type:'POST',
-        data: {
-          API_KEY:'abc',
-          start: Math.round(start.getTime() / 1000),
-          end: Math.round(end.getTime() / 1000)
-        }
-      });
-    },
-    color:'gray',
-    textColor:'black'
-    
-  });
 });
 </script></html>

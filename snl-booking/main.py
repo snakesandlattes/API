@@ -9,11 +9,6 @@ from google.appengine.ext.webapp import util
 from google.appengine.ext import db
 
 ################################################################################
-# Constants.
-
-SMS_MAX=155
-
-################################################################################
 # Models.
 
 class Customer(db.Model):
@@ -51,38 +46,45 @@ class Appointment(db.Model):
 ################################################################################
 # Controllers.
 
-'''
-Take a look at replacement for BlinkConnect interface here:
-http://arshaw.com/fullcalendar/
-'''
-
 class Root(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('Snakes & Lattes API.')
 
-'''
-http://localhost:8080/schedule/showrange/?API_KEY=abc&start=1330110248.388
-http://localhost:8080/schedule/showrange/?API_KEY=abc&start=1330119248.388
-'''
-
 class SMS:
+  
+  MAXLENGTH=155
+  
   client=TwilioRestClient(APICREDENTIALS.TWILIO.ACCOUNT,
                           APICREDENTIALS.TWILIO.TOKEN)
-  class send30minreminder(webapp2.RequestHandler):
-    def get(self):      
-      sms=SMS.client.sms.messages.create(to="+14163898478",
+  class sendAPI(webapp2.RequestHandler):
+    def get(self):
+      GET=self.request.get
+      if GET('API_KEY')!='abc': raise Exception("Invalid API key!")        
+      if len(GET('cell'))==0: raise Exception("No cell phone # given!")
+      sms=SMS.client.sms.messages.create(to="+1"+GET('cell'),
                                          from_="+16479316320",
-                                         body="Your reservation @ Snakes & Lattes is ready!")
+                                         body="Snakes & Lattes: your table is ready!")
       self.response.out.write(str(sms))
+      
+  def send30minreminder(number,message):
+    if len(message)>SMS.MAXLENGTH: raise Exception("Message exceeds length for SMS")
+    sms=SMS.client.sms.messages.create(to="+1"+str(number),
+                                       from_="+16479316320",
+                                       body=message)
 
 class Remind(webapp2.RequestHandler):
   def get(self):
     a=Appointment.all()
     a.filter("date >=", datetime.timedelta(minutes=-30)+datetime.datetime.today())
+    a.filter("date <", datetime.timedelta(minutes=-30)+datetime.datetime.today())
     a.filter("remindersSent ==",0)
     a.filter("isCellphone ==", True)
     a.filter("remindViaSMS ==", True)
+    results=a.fetch()
+    for r in results:
+      SMS.send30minreminder()
     self.response.out.write("OK!")
+
 
 class Schedule:
   class ShowRange(webapp2.RequestHandler):
@@ -100,7 +102,8 @@ class Schedule:
           'id':       r.key().id(),
           'title':    r.name+" for "+str(r.size),
           'start':    r.date.isoformat(),
-          'allDay':   False
+          'allDay':   False,
+          'editable': True
         })
       self.response.headers.add('Content-Type','application/json')
       self.response.out.write("ADDEVENTS("+json.dumps(jsonAppointments)+")")
@@ -109,7 +112,21 @@ class Schedule:
     def get(self):
       GET=self.request.get
       if GET('API_KEY')!='abc': raise Exception("Invalid API key!")
-      
+      if len(GET('id'))==0: raise Exception("No event ID given!")
+      a=Appointment.all()
+      a.filter("id ==", GET('id'))
+      result=a.fetch(1)
+      if len(result)==0: raise Exception("No events found for that ID!")
+      r=result[0]
+      self.response.headers.add('Content-Type','application/json')      
+      self.response.out.write("ADDEVENTS("+json.dumps({
+        'name':   r.name,
+        'email':  r.email,
+        'phone':  str(r.phone),
+        'notes':  r.notes,
+        'date':   r.date.isoformat(),
+        'size':   
+      })+")")
 
   # should only give back a true or false.
   class Try(webapp2.RequestHandler):
@@ -140,22 +157,9 @@ class Schedule:
                     )
       a.put()
       self.response.out.write(a)
-      
-
-'''
-http://localhost:8080/schedule/try/?API_KEY=abc&size=5&iswalkin=true&name=Sonny Smith&phone=(141)124-4419&email=sunny@gmail.com&date=1330111248388
-http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=1330119248388
-http://localhost:8080/schedule/try/?API_KEY=abc&size=4&iswalkin=false&name=Jane Doe&phone=(461)444-4444&email=jane@gmail.com&date=1330121248388
-
-http://snl-booking.appspot.com/schedule/try/?API_KEY=abc&size=5&iswalkin=true&name=Sonny Smith&phone=(141)124-4419&email=sunny@gmail.com&date=1330111248388
-http://snl-booking.appspot.com/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=1330119248388
-http://snl-booking.appspot.com/schedule/try/?API_KEY=abc&size=4&iswalkin=false&name=Jane Doe&phone=(461)444-4444&email=jane@gmail.com&date=1330121248388
-
-http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(14fdfd123-4189&email=joe@home.com&date=1330119248388
-http://localhost:8080/schedule/try/?API_KEY=abc&size=12&iswalkin=true&name=Joe Smith&phone=(141)123-4189&email=joe@home.com&date=Fri Feb 24 2012 13:40:02 GMT-0500 (EST)
-'''
 
 ################################################################################
+# URL Handlers.
 
 app = webapp2.WSGIApplication([
     ('/',                     Root),
@@ -163,5 +167,5 @@ app = webapp2.WSGIApplication([
     ('/schedule/try/',        Schedule.Try),
     
     ('/remind/',              Remind),
-    ('/SMS/',                 SMS.send30minreminder)
+    ('/SMS/',                 SMS.sendAPI)
 ], debug=True)
