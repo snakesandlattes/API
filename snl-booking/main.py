@@ -22,10 +22,14 @@ class Appointment(db.Model):
   name=           db.StringProperty(required=True)
   phone=          db.PhoneNumberProperty(required=True)
   isCellphone=    db.BooleanProperty()
-  email=          db.EmailProperty(required=True)
+  email=          db.EmailProperty(required=True)  
+  notes=          db.StringProperty()
+  
   remindSameDay=  db.BooleanProperty()
   remindSameWeek= db.BooleanProperty()
-  notes=          db.StringProperty()
+  remindersSent=  db.IntegerProperty()  
+  remindViaSMS=   db.BooleanProperty()
+  remindViaEmail= db.BooleanProperty()
 
   def __str__(self):
     return  "Appointment for "+self.name+". A "+\
@@ -61,7 +65,10 @@ class SMS:
 class Remind(webapp2.RequestHandler):
   def get(self):
     a=Appointment.all()
-    a.filter("date <=", datetime.timedelta(minutes=-30))
+    a.filter("date >=", datetime.timedelta(minutes=-30)+datetime.datetime.today())
+    a.filter("remindersSent ==",0)
+    a.filter("isCellphone ==", True)
+    a.filter("remindViaSMS ==", True)
     self.response.out.write("OK!")
 
 class Schedule:
@@ -115,7 +122,8 @@ class Schedule:
                     remindSameDay=    bool(GET('sameday')),
                     remindSameWeek=   bool(GET('sameweek')),
                     notes=            GET('notes'),
-                    isCellphone=      bool(GET('iscellphone'))
+                    isCellphone=      bool(GET('iscellphone')),
+                    remindersSent=    0
                     )
       a.put()
       self.response.out.write(a)
