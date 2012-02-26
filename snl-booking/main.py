@@ -69,12 +69,11 @@ class SMS:
   client=TwilioRestClient(APICREDENTIALS.TWILIO.ACCOUNT,
                           APICREDENTIALS.TWILIO.TOKEN)
   class send30minreminder(webapp2.RequestHandler):
-    def get(self):
-      
-      #sms=SMS.client.sms.messages.create(to="+14163898478",
-      #                                   from_="+16479316320",
-      #                                   body="Your reservation @ Snakes & Lattes is ready!")
-      self.response.out.write(str(SMS.client))
+    def get(self):      
+      sms=SMS.client.sms.messages.create(to="+14163898478",
+                                         from_="+16479316320",
+                                         body="Your reservation @ Snakes & Lattes is ready!")
+      self.response.out.write(str(sms))
 
 class Remind(webapp2.RequestHandler):
   def get(self):
