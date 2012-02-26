@@ -68,7 +68,7 @@ http://localhost:8080/schedule/showrange/?API_KEY=abc&start=1330119248.388
 class SMS:
   client=TwilioRestClient(APICREDENTIALS.TWILIO.ACCOUNT,
                           APICREDENTIALS.TWILIO.TOKEN)
-  class send30minreminder:
+  class send30minreminder(webapp2.RequestHandler):
     def get(self):
       
       #sms=SMS.client.sms.messages.create(to="+14163898478",
