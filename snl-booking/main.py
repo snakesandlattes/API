@@ -2,9 +2,16 @@
 import json
 import datetime
 import time
+import APICREDENTIALS
 import webapp2
+from twilio.rest import TwilioRestClient
 from google.appengine.ext.webapp import util
 from google.appengine.ext import db
+
+################################################################################
+# Constants.
+
+SMS_MAX=155
 
 ################################################################################
 # Models.
@@ -59,8 +66,14 @@ http://localhost:8080/schedule/showrange/?API_KEY=abc&start=1330119248.388
 '''
 
 class SMS:
-  def send30minreminder():
-    pass
+  client=TwilioRestClient(APICREDENTIALS.TWILIO.ACCOUNT,
+                          APICREDENTIALS.TWILIO.TOKEN)
+  class send30minreminder:
+    def get(self):
+      sms=SMS.client.sms.messages.create(to="+14163898478",
+                                         from_="+16479316320",
+                                         body="Your reservation @ Snakes & Lattes is ready!")
+      self.response.out.write("SMS OK!")
 
 class Remind(webapp2.RequestHandler):
   def get(self):
@@ -150,4 +163,5 @@ app = webapp2.WSGIApplication([
     ('/schedule/try/',        Schedule.Try),
     
     ('/remind/',              Remind),
+    ('/SMS/',                 SMS.send30minreminder)
 ], debug=True)
