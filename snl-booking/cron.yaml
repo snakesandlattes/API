@@ -1,0 +1,4 @@
+cron:
+- description: schedule SMS/email reminder
+  url: /tasks/summary
+  schedule: every 10 minutes

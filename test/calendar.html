@@ -1,0 +1,40 @@
+<html>
+<link rel='stylesheet' type='text/css' href='fullcalendar.css' /> 
+<script type='text/javascript' src='jquery-1.7.1.min.js'></script>
+<script type='text/javascript' src='jquery-ui-1.8.18.custom.min.js'></script>
+<script type='text/javascript' src='fullcalendar.min.js'></script>
+<body>
+  <div id="calendar"></div>
+
+  
+</body><script>
+// Need this for the JSONP callback!
+function ADDEVENTS(d){
+  for(var i=0; i<d.length; i++)
+    $('#calendar').fullCalendar('renderEvent', d[i]);
+}
+
+$(document).ready(function() {
+
+  $('#calendar').fullCalendar({
+    
+    defaultView:'agendaWeek',   
+    
+    events: function(start, end, callback) {
+      $.ajax({
+        url: 'http://snl-booking.appspot.com/schedule/showrange/',
+        dataType: 'jsonp',
+        type:'POST',
+        data: {
+          API_KEY:'abc',
+          start: Math.round(start.getTime() / 1000),
+          end: Math.round(end.getTime() / 1000)
+        }
+      });
+    },
+    color:'gray',
+    textColor:'black'
+    
+  });
+});
+</script></html>
