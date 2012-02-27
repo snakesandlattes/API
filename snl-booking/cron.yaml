@@ -1,8 +1,8 @@
-#Uncomment when the scheduler is set up correctly.
-#This will automatically send a reminder SMS to booked tables that are available
-#within the next 30 min. (assuming that's the time it takes for party to arrive)
+# This will automatically send a reminder SMS to booked tables that are
+# available within the next 30 min.
+# (assuming that's the time it takes for party to arrive)
 
-#cron:
-#- description: schedule SMS/email reminder
-#  url: /tasks/summary
-#  schedule: every 30 minutes
+cron:
+- description: schedule SMS/email reminder
+  url: /remind/
+  schedule: every 30 minutes

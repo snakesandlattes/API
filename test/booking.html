@@ -16,9 +16,7 @@
   <form id='booking'>
   
   <ul>
-  
-  <input type='hidden' id='iswalkin' value='false'/>
-  
+
   <li>
   <label>Choose Date</label>
   <input type='text' id='datepicker' />  
@@ -84,8 +82,8 @@
   </li>
   
   <li>
-  <label for='iscellphone'>Is a cellphone.</label>
-  <input type='checkbox' id='iscellphone' checked />
+  <label for='isCellphone'>Is a cellphone.</label>
+  <input type='checkbox' id='isCellphone' checked />
   </li>
   
   <li>
@@ -142,11 +140,11 @@ function checkOpenTimes(){
 
 function validateAndSend(){
   var requiredFields={
-    iswalkin:     $("#iswalkin").val(),
+    //iswalkin:     $("#iswalkin").val(),
     name:         $("#name").val(),
     email:        $("#email").val(),
     phone:        $("#phone").val(),
-    iscellphone:  $("#iscellphone").val(),
+    isCellphone:  $("#isCellphone").val()=="on",
     size:         $("#size").val(),
     date:         $("#datepicker").val(),
     time:         $("#time").val()
@@ -154,14 +152,14 @@ function validateAndSend(){
   
   var optionalFields={
     notes:            $("#notes").val(),
-    remindViaSMS:     $("#remindViaSMS").val(),
-    remindViaEmail:   $("#remindViaEmail").val(),
-    remindSameDay:    $("#remindSameDay").val(),
-    remindSameWeek:   $("#remindSameWeek").val()
+    remindViaSMS:     $("#remindViaSMS").val()=="on",
+    remindViaEmail:   $("#remindViaEmail").val()=="on",
+    remindSameDay:    $("#remindSameDay").val()=="on",
+    remindSameWeek:   $("#remindSameWeek").val()=="on"
   };
 
   for(var i in requiredFields)
-    if(!requiredFields[i] || !requiredFields[i].length)
+    if(typeof(requiredFields[i])=="string" && !requiredFields[i].length)
       return alert("Missing information: "+i+"!");
     
   if(requiredFields.email.indexOf("@")==-1)
@@ -184,16 +182,18 @@ function validateAndSend(){
     return alert("Booking is set to a time in the past!");
   
   $.ajax({
-    url: 'http://snl-booking.appspot.com/schedule/try/',
+    url: 'http://localhost:8080/schedule/try/',
+    //url: 'http://snl-booking.appspot.com/schedule/try/',
     dataType: 'jsonp',
     type:'POST',
     data: {
       API_KEY:            'dsjkgshk',
-      isWalkin:           requiredFields.iswalkin,
+      //Not needed. Defaults to False.
+      isWalkIn:           false,
       name:               requiredFields.name,
       email:              requiredFields.email,
       phone:              requiredFields.phone,
-      isCellphone:        requiredFields.iscellphone,
+      isCellphone:        requiredFields.isCellphone,
       size:               requiredFields.size,
       date:               datetime.valueOf(),
       notes:              optionalFields.notes,

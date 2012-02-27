@@ -20,6 +20,36 @@ function ADDEVENTS(d){
     $('#calendar').fullCalendar('renderEvent', d[i]);
 }
 
+function SHOWEVENT(d){
+  var alertString="";
+  for(var i in d)
+    alertString+=i.toUpperCase()+"  \t\t"+d[i]+"\n";
+  var cmd=prompt(alertString);
+  switch(cmd){
+    case 'text':
+      $.ajax({
+        url: 'http://snl-booking.appspot.com/SMS/',
+        dataType: 'jsonp',
+        type:'POST',
+        data: {
+          API_KEY:'dsjkgshk',
+          id:     d.id
+        }
+      });break;
+      
+    case 'delete':
+      $.ajax({
+        url: 'http://snl-booking.appspot.com/schedule/delete/',
+        dataType: 'jsonp',
+        type:'POST',
+        data: {
+          API_KEY:'dsjkgshk',
+          id:     d.id
+        }
+      });break;
+  }
+}
+
 $(document).ready(function() {
 
   $('#calendar').fullCalendar({
@@ -31,16 +61,29 @@ $(document).ready(function() {
     
     events: function(start, end, callback) {
       $.ajax({
-        url: 'http://snl-booking.appspot.com/schedule/showrange/',
+        url: 'http://snl-booking.appspot.com/schedule/show/range/',
         dataType: 'jsonp',
         type:'POST',
         data: {
           API_KEY:'dsjkgshk',
-          start: Math.round(start.getTime() / 1000),
-          end: Math.round(end.getTime() / 1000)
+          start:  Math.round(start.getTime() / 1000),
+          end:    Math.round(end.getTime() / 1000)
         }
       });
     },
+    
+    eventClick:function(e){
+      $.ajax({
+        url: 'http://snl-booking.appspot.com/schedule/show/event/',
+        dataType: 'jsonp',
+        type:'POST',
+        data: {
+          API_KEY:  'dsjkgshk',
+          id:       e.id
+        }
+      });
+    },
+    
     color:'gray',
     textColor:'black'
     
