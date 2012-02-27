@@ -13,13 +13,14 @@ from google.appengine.ext import db
 
 class Customer(db.Model):
   name=           db.StringProperty(required=True)
+  email=          db.EmailProperty(required=True)
   phone=          db.PhoneNumberProperty(required=True)
   isCellphone=    db.BooleanProperty()
-  email=          db.EmailProperty(required=True)
+  
 
 class Appointment(db.Model):
-  date=           db.DateTimeProperty(required=True)
   isWalkIn=       db.BooleanProperty(required=True)
+  date=           db.DateTimeProperty(required=True)  
   size=           db.IntegerProperty(required=True)
   name=           db.StringProperty(required=True)
   phone=          db.PhoneNumberProperty(required=True)
@@ -29,19 +30,21 @@ class Appointment(db.Model):
   
   remindSameDay=  db.BooleanProperty()
   remindSameWeek= db.BooleanProperty()
-  remindersSent=  db.IntegerProperty()  
   remindViaSMS=   db.BooleanProperty()
   remindViaEmail= db.BooleanProperty()
+  
+  remindersSent=  db.IntegerProperty()
 
   def __str__(self):
-    return  "Appointment for "+self.name+". A "+\
-            ("walk-in" if self.isWalkIn==True else "reserved")+\
-            " party, size of "+str(self.size)+". "+\
-            " Set for "+self.date.strftime("%I:%M %p at %A, %B %d, %Y")+". "+\
-            ("They want a same-day reminder. " if self.remindSameDay==True else "")+\
-            ("They want a same-week reminder. " if self.remindSameWeek==True else "")+\
-            "Let them know at "+self.email+" or "+self.phone+". "+\
-            (("Additionally, they said: "+self.notes) if len(self.notes) else "")
+    return  \
+      "Appointment for "+self.name+". A "+\
+      ("walk-in" if self.isWalkIn==True else "reserved")+\
+      " party, size of "+str(self.size)+". "+\
+      " Set for "+self.date.strftime("%I:%M %p at %A, %B %d, %Y")+". "+\
+      ("They want a same-day reminder. " if self.remindSameDay==True else "")+\
+      ("They want a same-week reminder. " if self.remindSameWeek==True else "")+\
+      "Let them know at "+self.email+" or "+self.phone+". "+\
+      (("Additionally, they said: "+self.notes) if len(self.notes) else "")
 
 ################################################################################
 # Controllers.
