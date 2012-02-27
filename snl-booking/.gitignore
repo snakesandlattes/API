@@ -4,3 +4,4 @@
 #   ACCOUNT=
 #   TOKEN=
 APICREDENTIALS.py
+*.pyc

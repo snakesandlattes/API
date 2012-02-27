@@ -17,6 +17,8 @@
   
   <ul>
   
+  <input type='hidden' id='iswalkin' value='false'/>
+  
   <li>
   <label>Choose Date</label>
   <input type='text' id='datepicker' />  
@@ -34,14 +36,21 @@
              j+=12;
           }
           if(Math.floor(i-j)==0) {
-            var timedisplay=Math.floor(i-j)==(i-j)?"12:00":"12:30";
+            var timedisplay=Math.floor(i-j)==(i-j)? "12:00":"12:30";
           } else {
-            var timedisplay=Math.floor(i-j)==(i-j)?
-            (i-j)+":00"
-            :Math.floor(i-j)+":30";
-          }          
+            var timedisplay=Math.floor(i-j)==(i-j)? (i-j)+":00":Math.floor(i-j)+":30";
+          }
+          var i_=i>>0;
+          var timevalue=i<24?
+            i_==i?
+              i+":00"
+              :i_+":30"
+            :i_==i?
+              (i-24)+":00"
+              :(i-24)+":30"
+          ;
           d.write(optionhtml
-            .replace('__TIMEVALUE__',i<24? i:i-24)
+            .replace('__TIMEVALUE__',timevalue)
             .replace('__TIME__',timedisplay)
             .replace('__AMPM__',isAM? 'AM':'PM')
           )
@@ -78,15 +87,20 @@
   <input type='checkbox' id='iscellphone' checked />
   </li>
   
+  <li>
+  <label for='notes'>Notes</label>
+  <input type='text' id='notes'/><br/>
+  </li>
+  
   <li class="hr"></li>
   
   <li>
   <label>Remind me</label>
-  <input type='checkbox' id='remindViaSMS'/> via text<br/>
+  <input type='checkbox' id='remindViaSMS' checked/> via text<br/>
   <label>&nbsp;</label>
   <input type='checkbox' id='remindViaEmail'/> via email<br/>
   <label>&nbsp;</label>
-  <input type='checkbox' id='remindSameDay'/> 30 min before, on the same day<br/>
+  <input type='checkbox' id='remindSameDay' checked/> 30 min before, on the same day<br/>
   <label>&nbsp;</label>
   <input type='checkbox' id='remindSameWeek'/> a day before, on the same week<br/>
   </li>
@@ -95,7 +109,7 @@
   
   <li>
   <label>&nbsp;</label>
-  <input type='button' value='Try Booking'/> &mdash; <input type='reset'/><br/>
+  <input type='button' value='Try Booking' id='submit' onclick="validateAndSend()"/> &mdash; <input type='reset' id='reset'/><br/>
   <div id='responseText'></div>
   </li>
   </ul>
@@ -107,6 +121,79 @@
 function ADDEVENTS(d){
   for(var i=0; i<d.length; i++)
     $('#calendar').fullCalendar('renderEvent', d[i]);
+}
+
+var BOOK={
+  FAIL:function(message) { $('#responseText').text(message.text); },
+  SUCCESS:function() {
+    $('#responseText').text('Booking request sent successfully!');
+    $('#submit')[0].disabled=true;
+    $('#reset')[0].disabled=true;
+  }
+};
+
+function checkOpenTimes(){
+  var date=$("#datepicker").val();
+}
+
+
+function validateAndSend(){
+  var requiredFields={
+    iswalkin:     $("#iswalkin").val(),
+    name:         $("#name").val(),
+    email:        $("#email").val(),
+    phone:        $("#phone").val(),
+    iscellphone:  $("#iscellphone").val(),
+    size:         $("#size").val(),
+    date:         $("#datepicker").val(),
+    time:         $("#time").val()
+  };
+  
+  var optionalFields={
+    notes:            $("#notes").val(),
+    remindViaSMS:     $("#remindViaSMS").val(),
+    remindViaEmail:   $("#remindViaEmail").val(),
+    remindViaSameDay: $("#remindViaSameDay").val(),
+    remindViaSameWeek:$("#remindViaSameWeek").val()
+  };
+
+  for(var i in requiredFields)
+    if(!requiredFields[i].length)
+      return alert("Missing information: "+i+"!");
+    
+  if(requiredFields.email.indexOf("@")==-1)
+    return alert("Invalid email!");
+    
+  if(isNaN(parseInt(requiredFields.size)))
+    return alert("Party size must be a number!");
+    
+  if(parseInt(requiredFields.size)>15)
+    return alert("Can't book a party with over 15 guests!");
+
+  var d=new Date(requiredFields.date);
+  var datetime=new Date(d.getFullYear,d.getMonth,d.getDay,requiredFields.)
+
+  $.ajax({
+    //url: 'http://snl-booking.appspot.com/schedule/showrange/',
+    url: 'http://localhost:8080/schedule/try/',
+    dataType: 'jsonp',
+    type:'POST',
+    data: {
+      API_KEY:            'abc',
+      iswalkin:           requiredFields.iswalkin,
+      name:               requiredFields.name,
+      email:              requiredFields.email,
+      phone:              requiredFields.phone,
+      iscellphone:        requiredFields.iscellphone,
+      size:               requiredFields.size,
+      date:               requiredFields.date,
+      remindViaSameWeek:  requiredFields.remindViaSameWeek,
+      remindViaSameDay:   requiredFields.remindViaSameDay,
+      remindViaSMS:       requiredFields.remindViaSMS,
+      remindViaEmail:     requiredFields.remindViaEmail
+      
+    }
+  });
 }
 
 $(document).ready(function(){
