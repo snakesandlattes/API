@@ -5,4 +5,4 @@
 cron:
 - description: schedule SMS/email reminder
   url: /remind/
-  schedule: every 30 minutes
+  schedule: every 30 minutes synchronized
