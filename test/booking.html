@@ -3,9 +3,10 @@
 <link rel="stylesheet" href="jquery.ui.datepicker.css"/>
 <style>
   body  { font-family: arial; }
-  label { display:block; min-width: 120px; float: left; }
+  label { display:block; min-width: 120px; float: left;}
   li    { list-style-type: none; line-height: 2.0; }
   .hr   { border-top:solid #000 1px; width: 380px; margin-top:8px; margin-bottom:8px; }
+  #responseText { color: #686; }
 </style>
 <script type='text/javascript' src='jquery-1.7.1.min.js'></script>
 <script type='text/javascript' src='jquery-ui-1.8.18.custom-datepickeronly.min.js'></script>
@@ -18,12 +19,36 @@
   
   <li>
   <label>Choose Date</label>
-  <div id='datepicker' style="padding-top:32px; display:block;"></div>
+  <input type='text' id='datepicker' />  
   </li>
   
   <li>
   <label>Choose Time</label>
-  <div id='datepicker' style="padding-top:32px; display:block;"></div>
+  <select id='time'>
+    <script>
+      (function(d){
+        var optionhtml="<option value='__TIMEVALUE__'>__TIME__ __AMPM__</option>";
+        for(var i=11, j=0, isAM=1;i<26; i+=0.5){
+          if(i==12 || i==24){
+             isAM=!isAM;
+             j+=12;
+          }
+          if(Math.floor(i-j)==0) {
+            var timedisplay=Math.floor(i-j)==(i-j)?"12:00":"12:30";
+          } else {
+            var timedisplay=Math.floor(i-j)==(i-j)?
+            (i-j)+":00"
+            :Math.floor(i-j)+":30";
+          }          
+          d.write(optionhtml
+            .replace('__TIMEVALUE__',i<24? i:i-24)
+            .replace('__TIME__',timedisplay)
+            .replace('__AMPM__',isAM? 'AM':'PM')
+          )
+        }          
+      })(document);
+    </script>
+  </select>
   </li>  
   
   <li>
@@ -35,45 +60,47 @@
   
   <li>
   <label for='name'>Name</label>
-  <input type='text' name='name'/>
+  <input type='text' id='name'/>
   </li>
   
   <li>
   <label for='email'>E-mail</label>
-  <input type='text' name='email'/><br/>
+  <input type='text' id='email'/><br/>
   </li>
   
   <li>
   <label for='phone'>Phone</label>
-  <input type='text' name='phone'/><br/>
+  <input type='text' id='phone'/><br/>
   </li>
   
   <li>
   <label for='iscellphone'>Is a cellphone.</label>
-  <input type='radio' name='iscellphone' value='true' checked /> Yes &mdash;
-  <input type='radio' name='iscellphone' value='false'/> No
+  <input type='checkbox' id='iscellphone' checked />
   </li>
   
   <li class="hr"></li>
   
   <li>
   <label>Remind me</label>
-  <input type='checkbox' name='remindViaSMS'/> via text<br/>
+  <input type='checkbox' id='remindViaSMS'/> via text<br/>
   <label>&nbsp;</label>
-  <input type='checkbox' name='remindViaEmail'/> via email<br/>
+  <input type='checkbox' id='remindViaEmail'/> via email<br/>
   <label>&nbsp;</label>
-  <input type='checkbox' name='remindSameDay'/> 30 min before, on the same day<br/>
+  <input type='checkbox' id='remindSameDay'/> 30 min before, on the same day<br/>
   <label>&nbsp;</label>
-  <input type='checkbox' name='remindSameWeek'/> a day before, on the same week<br/>
+  <input type='checkbox' id='remindSameWeek'/> a day before, on the same week<br/>
   </li>
   
+  <li class="hr"></li>  
+  
+  <li>
+  <label>&nbsp;</label>
+  <input type='button' value='Try Booking'/> &mdash; <input type='reset'/><br/>
+  <div id='responseText'></div>
+  </li>
   </ul>
   
-  
-  <input type='reset' />
   </form>
-  
-    
   
 </body><script>
 // Need this for the JSONP callback!
@@ -84,6 +111,7 @@ function ADDEVENTS(d){
 
 $(document).ready(function(){
   $( "#datepicker" ).datepicker();
+  //Verified time slot is open! Booking request sent!
   //$('#datepicker').val()
 });
 </script></html>
