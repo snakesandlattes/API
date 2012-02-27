@@ -70,7 +70,8 @@ class SMS:
   class sendAPI(webapp2.RequestHandler):
     def get(self):
       GET=self.request.get
-      if GET('API_KEY')!='abc': raise APIError.BadKey
+      if GET('API_KEY')!=APICREDENTIALS.SNAKESANDLATTES.KEY:
+        raise APIError.BadKey
       if len(GET('cell'))==0:   raise APIError.MissingArgs("No cell phone # given!")
       sms=SMS.client.sms.messages.create(
         to="+1"+GET('cell'),
@@ -102,16 +103,33 @@ class Remind(webapp2.RequestHandler):
 
 
 class Schedule:
+  
+  class GetExistingForDay(webapp2.RequestHandler):
+    def get(self):      
+      HEADER=self.response.headers.add
+      GET=self.request.get
+      WRITE=self.response.out.write
+      
+      if GET('API_KEY') not in APICREDENTIALS.SNAKESANDLATTES.KEYS:
+        raise APIError.BadKey
+      
+      fromdate=datetime.datetime.fromtimestamp(fromdate)  #+datetime.timedelta(hours=-5)
+      
+  
   class ShowRange(webapp2.RequestHandler):
     def get(self):
+      HEADER=self.response.headers.add
       GET=self.request.get
-      if GET('API_KEY')!='abc': raise APIError.BadKey    
+      WRITE=self.response.out.write
+      
+      if GET('API_KEY') not in APICREDENTIALS.SNAKESANDLATTES.KEYS:
+        raise APIError.BadKey
       
       fromdate=float(GET('start'))
       a=Appointment.all()
       a.filter("date >=", datetime.datetime.fromtimestamp(fromdate))
       a.order("date")
-      results=a.fetch(10)
+      results=a.fetch(1000)
       jsonAppointments=[]
       for r in results:
         jsonAppointments.append({
@@ -120,24 +138,29 @@ class Schedule:
           # convert from GMT (unix timestamp) to EST/EDT
           'start':    (r.date+datetime.timedelta(hours=-5)).isoformat(),
           'allDay':   False,
-          'editable': True
+          'editable': False,
+          'end':      (r.date+datetime.timedelta(hours=-5,minutes=+30)).isoformat(),
         })
-      self.response.headers.add('Content-Type','application/json')
-      self.response.out.write("ADDEVENTS("+json.dumps(jsonAppointments)+")")
+      HEADER('Content-Type','application/json')
+      WRITE("ADDEVENTS("+json.dumps(jsonAppointments)+")")
 
   class ShowEvent(webapp2.RequestHandler):
     def get(self):
+      HEADER=self.response.headers.add
+      WRITE=self.response.out.write
       GET=self.request.get
-      if GET('API_KEY')!='abc': raise APIError.BadKey
-      if len(GET('id'))==0:     raise APIError.MissingArgs("No event ID given!")
+      if GET('API_KEY') not in APICREDENTIALS.SNAKESANDLATTES.KEYS:
+        raise APIError.BadKey
+      if len(GET('id'))==0:
+        raise APIError.MissingArgs("No event ID given!")
       
       a=Appointment.all()
       a.filter("id ==", GET('id'))
       result=a.fetch(1)
       if len(result)==0: raise APIError.General("No events found for that ID!")
       r=result[0]
-      self.response.headers.add('Content-Type','application/json')      
-      self.response.out.write("ADDEVENTS("+json.dumps({
+      HEADER('Content-Type','application/json')      
+      WRITE("SHOWEVENT("+json.dumps({
         'name':   r.name,
         'email':  r.email,
         'phone':  str(r.phone),
@@ -152,7 +175,8 @@ class Schedule:
       WRITE=self.response.out.write
       
       try:
-        if GET('API_KEY')!='abc': raise APIError.BadKey
+        if GET('API_KEY') not in APICREDENTIALS.SNAKESANDLATTES.KEYS:
+          raise APIError.BadKey
         if  len(GET('isWalkin')) * \
             len(GET('date')) * \
             len(GET('size')) * \

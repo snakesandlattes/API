@@ -48,7 +48,7 @@
               :i_+":30"
             :i_==i?
               (i-24)+":00"
-              :(i-24)+":30"
+              :(i-24)>>0+":30"
           ;
           d.write(optionhtml
             .replace('__TIMEVALUE__',timevalue)
@@ -156,8 +156,8 @@ function validateAndSend(){
     notes:            $("#notes").val(),
     remindViaSMS:     $("#remindViaSMS").val(),
     remindViaEmail:   $("#remindViaEmail").val(),
-    remindViaSameDay: $("#remindViaSameDay").val(),
-    remindViaSameWeek:$("#remindViaSameWeek").val()
+    remindSameDay:    $("#remindSameDay").val(),
+    remindSameWeek:   $("#remindSameWeek").val()
   };
 
   for(var i in requiredFields)
@@ -185,11 +185,10 @@ function validateAndSend(){
   
   $.ajax({
     url: 'http://snl-booking.appspot.com/schedule/try/',
-    //url: 'http://localhost:8080/schedule/try/',
     dataType: 'jsonp',
     type:'POST',
     data: {
-      API_KEY:            'abc',
+      API_KEY:            'dsjkgshk',
       isWalkin:           requiredFields.iswalkin,
       name:               requiredFields.name,
       email:              requiredFields.email,
@@ -197,18 +196,15 @@ function validateAndSend(){
       isCellphone:        requiredFields.iscellphone,
       size:               requiredFields.size,
       date:               datetime.valueOf(),
-      remindViaSameWeek:  requiredFields.remindViaSameWeek,
-      remindViaSameDay:   requiredFields.remindViaSameDay,
-      remindViaSMS:       requiredFields.remindViaSMS,
-      remindViaEmail:     requiredFields.remindViaEmail
+      notes:              optionalFields.notes,
+      remindSameWeek:     optionalFields.remindSameWeek,
+      remindSameDay:      optionalFields.remindSameDay,
+      remindViaSMS:       optionalFields.remindViaSMS,
+      remindViaEmail:     optionalFields.remindViaEmail
       
     }
   });
 }
 
-$(document).ready(function(){
-  $( "#datepicker" ).datepicker();
-  //Verified time slot is open! Booking request sent!
-  //$('#datepicker').val()
-});
+$(document).ready(function(){ $( "#datepicker" ).datepicker(); });
 </script></html>

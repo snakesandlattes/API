@@ -3,6 +3,8 @@
 # class TWILIO:
 #   ACCOUNT=
 #   TOKEN=
+# class SNAKESANDLATTES:
+#   KEYS=( , ... ,)
 APICREDENTIALS.py
 
 

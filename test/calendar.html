@@ -1,12 +1,18 @@
 <html>
+<style>
+  body  { font-family: arial; }
+  label { display:block; min-width: 120px; float: left;}
+  li    { list-style-type: none; line-height: 2.0; }
+  .hr   { border-top:solid #000 1px; width: 380px; margin-top:8px; margin-bottom:8px; }
+  #responseText { color: #686; }
+</style>
 <link rel='stylesheet' type='text/css' href='fullcalendar.css' /> 
 <script type='text/javascript' src='jquery-1.7.1.min.js'></script>
 <script type='text/javascript' src='jquery-ui-1.8.18.custom.min.js'></script>
 <script type='text/javascript' src='fullcalendar.min.js'></script>
 <body>
-  <div id="calendar"></div>
-
-  
+  <h3>Booking Admin -- Intended Users: Cafe Staff</h3>
+  <div id="calendar"></div>  
 </body><script>
 // Need this for the JSONP callback!
 function ADDEVENTS(d){
@@ -18,7 +24,9 @@ $(document).ready(function() {
 
   $('#calendar').fullCalendar({
     
-    ignoreTimezone:false,
+    header:{
+      right:'agendaWeek month today prev,next'
+    },
     defaultView:'agendaWeek',   
     
     events: function(start, end, callback) {
@@ -27,7 +35,7 @@ $(document).ready(function() {
         dataType: 'jsonp',
         type:'POST',
         data: {
-          API_KEY:'abc',
+          API_KEY:'dsjkgshk',
           start: Math.round(start.getTime() / 1000),
           end: Math.round(end.getTime() / 1000)
         }
