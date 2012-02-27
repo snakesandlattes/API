@@ -182,8 +182,7 @@ function validateAndSend(){
     return alert("Booking is set to a time in the past!");
   
   $.ajax({
-    url: 'http://localhost:8080/schedule/try/',
-    //url: 'http://snl-booking.appspot.com/schedule/try/',
+    url: 'http://snl-booking.appspot.com/schedule/try/',
     dataType: 'jsonp',
     type:'POST',
     data: {
