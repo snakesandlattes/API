@@ -117,7 +117,8 @@ class Schedule:
         jsonAppointments.append({
           'id':       r.key().id(),
           'title':    r.name+" for "+str(r.size),
-          'start':    r.date.isoformat(),
+          # convert from GMT (unix timestamp) to EST/EDT
+          'start':    (r.date+datetime.timedelta(hours=-5)).isoformat(),
           'allDay':   False,
           'editable': True
         })
@@ -152,7 +153,7 @@ class Schedule:
       
       try:
         if GET('API_KEY')!='abc': raise APIError.BadKey
-        if  len(GET('iswalkin')) * \
+        if  len(GET('isWalkin')) * \
             len(GET('date')) * \
             len(GET('size')) * \
             len(GET('name')) * \
@@ -160,27 +161,39 @@ class Schedule:
             len(GET('email')) == 0 :
           raise APIError.MissingArgs
         
+        date=datetime.datetime.fromtimestamp(float(GET('date'))/1000)
+        
         a=Appointment.all()
         a.filter("date ==", date)
-        results=a.fetch()
+        results=a.fetch(10)
         if len(results)!=0: raise APIError.TimeSlotFull
         
         a=Appointment(
-          date=             datetime.datetime.fromtimestamp(float(GET('date'))/1000),
-          isWalkIn=         bool(GET('iswalkin')),
+          date=             date,
+          isWalkIn=         bool(GET('isWalkin')),
           size=             int(GET('size')),
           name=             GET('name'),
           phone=            GET('phone'),
           email=            GET('email'),
-          remindSameDay=    bool(GET('sameday')),
-          remindSameWeek=   bool(GET('sameweek')),
+          remindSameDay=    bool(GET('remindSameDay')),
+          remindSameWeek=   bool(GET('remindSameWeek')),
+          remindViaSMS=     bool(GET('remindViaSMS')),
+          remindViaEmail=   bool(GET('remindViaEmail')),
           notes=            GET('notes'),
-          isCellphone=      bool(GET('iscellphone')),
+          isCellphone=      bool(GET('isCellphone')),
           remindersSent=    0
         )
         
       except APIError.MissingArgs:
-        WRITE('BOOK.FAIL('+json.dumps({'text':'Missing required information!'})+')')
+        WRITE('BOOK.FAIL('+json.dumps({
+          'text':'Missing required information!',
+          'isWalkin':len(GET('isWalkin')),
+          'date':len(GET('date')),
+          'size':len(GET('size')),
+          'name':len(GET('name')),
+          'phone':len(GET('phone')),
+          'email':len(GET('email')),
+        })+')')        
       except APIError.BadKey:
         WRITE('BOOK.FAIL('+json.dumps({'text':'Invalid API key!'})+')')
       except APIError.TimeSlotFull:

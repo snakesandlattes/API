@@ -4,4 +4,7 @@
 #   ACCOUNT=
 #   TOKEN=
 APICREDENTIALS.py
+
+
+# No compiled files.
 *.pyc

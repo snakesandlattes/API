@@ -18,6 +18,7 @@ $(document).ready(function() {
 
   $('#calendar').fullCalendar({
     
+    ignoreTimezone:false,
     defaultView:'agendaWeek',   
     
     events: function(start, end, callback) {
