@@ -116,6 +116,9 @@
   </form>
   
 </body><script>
+
+var APIURL="http://snakesandlattesapi.appspot.com";
+
 // Need this for the JSONP callback!
 function ADDEVENTS(d){
   for(var i=0; i<d.length; i++)
@@ -182,7 +185,7 @@ function validateAndSend(){
     return alert("Booking is set to a time in the past!");
   
   $.ajax({
-    url: 'http://snl-booking.appspot.com/schedule/try/',
+    url: APIURL+'/schedule/try/',
     dataType: 'jsonp',
     type:'POST',
     data: {

@@ -14,6 +14,9 @@
   <h3>Booking Admin -- Intended Users: Cafe Staff</h3>
   <div id="calendar"></div>  
 </body><script>
+
+var APIURL="http://snakesandlattesapi.appspot.com";
+
 // Need this for the JSONP callback!
 function ADDEVENTS(d){
   for(var i=0; i<d.length; i++)
@@ -28,7 +31,7 @@ function SHOWEVENT(d){
   switch(cmd){
     case 'text':
       $.ajax({
-        url: 'http://snl-booking.appspot.com/SMS/',
+        url: APIURL+'/SMS/',
         dataType: 'jsonp',
         type:'POST',
         data: {
@@ -39,7 +42,7 @@ function SHOWEVENT(d){
       
     case 'delete':
       $.ajax({
-        url: 'http://snl-booking.appspot.com/schedule/delete/',
+        url: APIURL+'/schedule/delete/',
         dataType: 'jsonp',
         type:'POST',
         data: {
@@ -61,7 +64,7 @@ $(document).ready(function() {
     
     events: function(start, end, callback) {
       $.ajax({
-        url: 'http://snl-booking.appspot.com/schedule/show/range/',
+        url: APIURL+'/schedule/show/range/',
         dataType: 'jsonp',
         type:'POST',
         data: {
@@ -74,7 +77,7 @@ $(document).ready(function() {
     
     eventClick:function(e){
       $.ajax({
-        url: 'http://snl-booking.appspot.com/schedule/show/event/',
+        url: APIURL+'/schedule/show/event/',
         dataType: 'jsonp',
         type:'POST',
         data: {
