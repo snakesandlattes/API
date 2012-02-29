@@ -7,7 +7,7 @@
   li          { list-style-type: none; line-height: 2.0; }
   .hr         { border-top:solid #000 1px; width: 380px; margin-top:8px; margin-bottom:8px; }
   #SUCCESS    { color: #686; }
-  #FAIL       { color: #686; }
+  #FAIL       { color: #866; }
   
   #backbar      { display: none; }
   #submitbar    { display: block; }
@@ -51,7 +51,7 @@
               :i_+":30"
             :i_==i?
               (i-24)+":00"
-              :(i-24)>>0+":30"
+              :((i-24)>>0)+":30"
           ;
           d.write(optionhtml
             .replace('__TIMEVALUE__',timevalue)
@@ -139,7 +139,7 @@ var BOOK={
   },
   SUCCESS:function() {
     $('#responseText').html(
-      "<div id='FAIL'>Booking request sent successfully! We\'ll send you a confirmation email shortly!</div>"
+      "<div id='SUCCESS'>Booking request sent successfully! We\'ll send you a confirmation email shortly!</div>"
     );
     $('#submitbar').hide();
     $('#backbar').show();
@@ -185,12 +185,13 @@ function validateAndSend(){
     return alert("Can't book a party with over 15 guests!");
 
   var d=new Date(requiredFields.date);
+  alert(d)
   var t=requiredFields.time.split(':');  
+  alert(t)
   var datetime=new Date(
     d.getFullYear(),d.getMonth(),d.getDate(),
     parseInt(t[0]),parseInt(t[1]),0,0
   );
-  
   if(datetime.valueOf()<(new Date()).valueOf())
     return alert("Booking is set to a time in the past!");
   
@@ -220,6 +221,7 @@ function validateAndSend(){
       $('#responseText').html("<img src='images/66.gif' align='center'/>");
     },
     error:function(x,errorText){
+      if(errorText=="parsererror") return;
       $('#responseText').html("<div id='FAIL'>Uh oh! Something went wrong during the booking request! Try sending again! '"+errorText+"'</div>");
       $('#submitbar').show();
       $('#backbar').hide();

@@ -1,18 +1,39 @@
-<html>
+<html><title>Booking Admin -- Intended Users: Cafe Staff</title>
 <style>
-  body  { font-family: arial; }
-  label { display:block; min-width: 120px; float: left;}
-  li    { list-style-type: none; line-height: 2.0; }
-  .hr   { border-top:solid #000 1px; width: 380px; margin-top:8px; margin-bottom:8px; }
-  #responseText { color: #686; }
+  body          { font-family: arial; }
+  #adminbox     { float: left; width:100%; background: #d8e1e5; border-radius:4px; border: inset #234 solid; margin-top: 6px;}
+  #eventHeader  { background: #567; color: #abc; padding-left:4px; }
+  
+  li            { list-style-type: none; }
+  #detailsbox   { padding:4px; float:left; font-size:11px; display: none;}
+    #detailsbox table     {font-size:inherit;}
+    #detailsbox table th  {text-align: left; vertical-align:top; width:90px;}
+    #detailsbox table th input { width: 80px;}
+  .hr           { border-top:solid #000 1px; margin-top:2px; margin-bottom:2px; }
+  .b            { font-weight: bold; }
+  
+  #actionsbox   { padding:4px; float:right; width: 200px; border-left: #333 1px dashed; text-align: right; display: none; }
+  #actionsbox input { margin-bottom: 8px;}
+  .action       { display: block; width:200px; }
 </style>
 <link rel='stylesheet' type='text/css' href='fullcalendar.css' /> 
 <script type='text/javascript' src='jquery-1.7.1.min.js'></script>
 <script type='text/javascript' src='jquery-ui-1.8.18.custom.min.js'></script>
 <script type='text/javascript' src='fullcalendar.min.js'></script>
 <body>
-  <h3>Booking Admin -- Intended Users: Cafe Staff</h3>
-  <div id="calendar"></div>  
+  <!--<h3>Booking Admin -- Intended Users: Cafe Staff</h3>-->
+  <div id="calendar"></div>
+  <div id='adminbox'>
+    <div id='eventHeader'>Click on an event for details.</div>
+    <div id='detailsbox'>
+    </div>
+    <div id='actionsbox'>
+      <input class='action' type='button' value='Send Text' onclick='EventAction.Text(false)'/>
+      <input class='action' type='button' value='Send Reminder Text' onclick='EventAction.Text(true)'/>
+      <input class='action' type='button' value='Delete Event' onclick='EventAction.Delete()'/>
+      <input class='action' type='button' value='Save Details'/>
+    </div>
+  </div>
 </body><script>
 
 var APIURL="http://snakesandlattesapi.appspot.com";
@@ -24,39 +45,122 @@ function ADDEVENTS(d){
 }
 
 function SHOWEVENT(d){
-  var alertString="";
-  for(var i in d)
-    alertString+=i.toUpperCase()+"  \t\t"+d[i]+"\n";
-  var cmd=prompt(alertString);
-  switch(cmd){
-    case 'text':
-      $.ajax({
-        url: APIURL+'/SMS/',
-        dataType: 'jsonp',
-        type:'POST',
-        data: {
-          API_KEY:'dsjkgshk',
-          id:     d.id
-        }
-      });break;
-      
-    case 'delete':
-      $.ajax({
-        url: APIURL+'/schedule/delete/',
-        dataType: 'jsonp',
-        type:'POST',
-        data: {
-          API_KEY:'dsjkgshk',
-          id:     d.id
-        }
-      });break;
-  }
+  var details="<table>";
+  selectedEventData=d;  
+  var fields=[
+    ["Name","name",d.name],
+    ["Size","size",d.size],
+    ["Phone","phone",d.phone],
+    ["Email","email",d.email],
+    ["Notes","notes",
+      d.notes+"<li class='hr'></li>"+
+      (d.remindSameDay?"<li class='b'>Customer set to automatically receive a reminder text 30 minutes prior to event.</li>":"")+
+      (d.remindersSent?"<li class='b'>Customer has already received "+d.remindersSent+" reminder message(s).</li>":"")
+    ],
+  ];
+  for(var i in fields)
+    details+=
+      "<tr><th><input type='button' value='"+fields[i][0]+
+      "' onclick='EventAction.EditField(\""+fields[i][0]+"\",\""+
+      fields[i][1]+"\")'/></th><td>"+fields[i][2]+"</td></tr>";
+  $('#detailsbox').html(details+"</table>");
+  $('#detailsbox').show();
+  $('#actionsbox').show();
 }
+
+var EventAction={
+  ResetAdminBox:function(){
+    $('#eventHeader').text('Click on an event for details.');
+    $('#detailsbox').hide();
+    $('#actionsbox').hide();
+  },
+  EditField:function(name,field){
+    var value=prompt(name,selectedEventData[field]);
+    if(!value) return;
+    $.ajax({
+      url: APIURL+'/schedule/edit/',
+      dataType: 'jsonp',
+      type:'POST',
+      data: {
+        API_KEY:  'dsjkgshk',
+        id:       selectedEvent.id,
+        'field':  field,
+        'value':  value
+      },
+      complete:function(){
+        EventAction.UpdateAdminHeader();
+        $('#calendar').fullCalendar('refetchEvents');
+        $.ajax({
+          url: APIURL+'/schedule/show/event/',
+          dataType: 'jsonp',
+          type:'POST',
+          data: {
+            API_KEY:  'dsjkgshk',
+            id:       selectedEvent.id
+          }
+        });
+      }
+    });
+  },
+  Delete:function(){
+    if(!confirm("Delete "+selectedEvent.title+"?")) return;
+    $.ajax({
+      url: APIURL+'/schedule/delete/',
+      dataType: 'jsonp',
+      type:'POST',
+      data: {
+        API_KEY:'dsjkgshk',
+        id:     selectedEvent.id
+      },
+      complete:function(){
+        EventAction.ResetAdminBox();
+        $('#calendar').fullCalendar('refetchEvents');
+      }
+    });
+  },
+  Text:function(isReminder){
+    var txt=isReminder?
+      prompt("Reminder text:","Hi "+selectedEventData.name+", your Snakes & Lattes event begins on "+selectedEventDateText)
+      :prompt("Text:");
+    if(!txt || !txt.length) return;
+    if(txt.length>155) return alert("Text is too long!");
+    $.ajax({
+      url: APIURL+'/SMS/',
+      dataType: 'jsonp',
+      type:'POST',
+      data: {
+        API_KEY:'dsjkgshk',
+        id:     selectedEvent.id,
+        message:txt
+      }
+    });
+  },
+  UpdateAdminHeader:function(){
+    var d=new Date(selectedEvent.start);
+    var hours=d.getHours()+'';
+    hours=hours.length==2?hours:'0'+hours;
+    var minutes=d.getMinutes()+'';
+    minutes=minutes.length==2?minutes:'0'+minutes;
+    selectedEventDateText=d.toDateString()+' @ '+hours+':'+minutes;
+    $('#eventHeader').text(selectedEventDateText);
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Stored states.
+
+var selectedEvent;
+var selectedEventData;
+var selectedEventDateText;
+
+////////////////////////////////////////////////////////////////////////////////
+// Init.
 
 $(document).ready(function() {
 
   $('#calendar').fullCalendar({
     
+    aspectRatio:2.42,
     allDaySlot: false,
     defaultEventMinutes: 30,
     firstHour:11,
@@ -88,11 +192,20 @@ $(document).ready(function() {
           id:       e.id
         }
       });
+      selectedEvent=e;
+      EventAction.UpdateAdminHeader();
     },
     
     color:'gray',
     textColor:'black'
     
   });
+  
+  // Refresh from server every minute.
+  setInterval(function(){
+    $('#calendar').fullCalendar('refetchEvents');
+    $('#calendar').fullCalendar('rerenderEvents');
+  },300000);
+  
 });
 </script></html>

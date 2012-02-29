@@ -149,7 +149,7 @@ class Schedule:
           'editable': False,
           'end':      (r.date+datetime.timedelta(hours=-5,minutes=+30)).isoformat(),
         })
-      HEADER('Content-Type','application/json')
+      HEADER('Content-Type','application/jsonp')
       WRITE("ADDEVENTS("+json.dumps(jsonAppointments)+")")
 
 
@@ -168,7 +168,7 @@ class Schedule:
       a=Appointment.get_by_id(long(GET('id')))
       if a==None: raise APIError.General("No events found for that ID!")
       
-      HEADER('Content-Type','application/json')
+      HEADER('Content-Type','application/jsonp')
       WRITE("SHOWEVENT("+json.dumps({
         'id':             a.key().id(),
         'name':           a.name,
@@ -177,10 +177,49 @@ class Schedule:
         'notes':          a.notes,
         'date':           a.date.isoformat(),
         'size':           a.size,
+        'remindSameWeek': a.remindSameWeek,
+        'remindSameDay':  a.remindSameDay,
         'remindViaSMS':   a.remindViaSMS,
         'remindViaEmail': a.remindViaEmail,
         'remindersSent':  a.remindersSent,
       })+")")
+  
+  class EditEvent(webapp2.RequestHandler):
+    def get(self):
+      HEADER=self.response.headers.add
+      WRITE=self.response.out.write
+      GET=self.request.get
+      
+      id=GET('id')
+      field=GET('field')
+      value=GET('value')
+      
+      if len(GET('API_KEY'))==0 or GET('API_KEY') not in APICREDENTIALS.SNAKESANDLATTES.KEYS:
+        raise APIError.BadKey
+      
+      if len(id)==0:
+        raise APIError.MissingArgs("No event ID given!")      
+      a=Appointment.get_by_id(long(id))
+      if a==None: raise APIError.General("No events found for that ID!")
+      
+      if len(field)==0:
+        raise APIError.MissingArgs("No field given for this edit!")
+      if len(value)==0:
+        raise APIError.MissingArgs("No field value given for this edit!")
+      
+      if field == 'name':
+        a.name=value
+      elif field == 'size':
+        a.size=int(value)
+      elif field == 'phone':
+        a.phone=value
+      elif field == 'email':
+        a.email=value
+      elif field == 'notes':
+        a.notes=value
+      else:
+        raise APIError.General('Field \''+field+'\' not editable!')
+      a.put()
   
   class DeleteEvent(webapp2.RequestHandler):
     def get(self):
@@ -212,7 +251,7 @@ class Schedule:
       
       a=Appointment.get_by_id(long(GET('id')))
       if a==None: raise APIError.General("No events found for that ID!")
-      SMS.sendSMS(a.phone,"Hi "+a.name+", your table @ Snakes & Lattes is ready!")
+      SMS.sendSMS(a.phone,GET('message'))
       a.remindersSent+=1
       a.put()
       
@@ -221,6 +260,7 @@ class Schedule:
     def get(self):      
       GET=self.request.get
       WRITE=self.response.out.write
+      HEADER=self.response.headers.add
       
       try:
         if len(GET('API_KEY'))==0 or GET('API_KEY') not in APICREDENTIALS.SNAKESANDLATTES.KEYS:
@@ -257,6 +297,7 @@ class Schedule:
         )
         
       except APIError.MissingArgs:
+        HEADER('Content-Type','application/jsonp')
         WRITE('BOOK.FAIL('+json.dumps({
           'text':'Missing required information!',
           'isWalkin':len(GET('isWalkin')),
@@ -267,11 +308,14 @@ class Schedule:
           'email':len(GET('email')),
         })+')')        
       except APIError.BadKey:
+        HEADER('Content-Type','application/jsonp')
         WRITE('BOOK.FAIL('+json.dumps({'text':'Invalid API key!'})+')')
       except APIError.TimeSlotFull:
+        HEADER('Content-Type','application/jsonp')
         WRITE('BOOK.FAIL('+json.dumps({'text':'Time slot not available!'})+')')
       else:
         a.put()
+        HEADER('Content-Type','application/jsonp')
         WRITE('BOOK.SUCCESS()')
 
 ################################################################################
@@ -280,6 +324,7 @@ class Schedule:
 app = webapp2.WSGIApplication([
     ('/',                     Root),
     ('/schedule/delete/',     Schedule.DeleteEvent),
+    ('/schedule/edit/',       Schedule.EditEvent),
     ('/schedule/show/event/', Schedule.ShowEvent),
     ('/schedule/show/range/', Schedule.ShowRange),
     ('/schedule/try/',        Schedule.Try),
