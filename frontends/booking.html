@@ -185,9 +185,7 @@ function validateAndSend(){
     return alert("Can't book a party with over 15 guests!");
 
   var d=new Date(requiredFields.date);
-  alert(d)
   var t=requiredFields.time.split(':');  
-  alert(t)
   var datetime=new Date(
     d.getFullYear(),d.getMonth(),d.getDate(),
     parseInt(t[0]),parseInt(t[1]),0,0

@@ -30,8 +30,8 @@
     <div id='actionsbox'>
       <input class='action' type='button' value='Send Text' onclick='EventAction.Text(false)'/>
       <input class='action' type='button' value='Send Reminder Text' onclick='EventAction.Text(true)'/>
+      <input class='action' type='button' value='Move Event' /><br/>
       <input class='action' type='button' value='Delete Event' onclick='EventAction.Delete()'/>
-      <input class='action' type='button' value='Save Details'/>
     </div>
   </div>
 </body><script>
@@ -113,8 +113,8 @@ var EventAction={
         id:     selectedEvent.id
       },
       complete:function(){
-        EventAction.ResetAdminBox();
         $('#calendar').fullCalendar('refetchEvents');
+        EventAction.ResetAdminBox();
       }
     });
   },
@@ -159,7 +159,7 @@ var selectedEventDateText;
 $(document).ready(function() {
 
   $('#calendar').fullCalendar({
-    
+    lazyFetching:false,
     aspectRatio:2.42,
     allDaySlot: false,
     defaultEventMinutes: 30,
@@ -205,7 +205,7 @@ $(document).ready(function() {
   setInterval(function(){
     $('#calendar').fullCalendar('refetchEvents');
     $('#calendar').fullCalendar('rerenderEvents');
-  },300000);
+  },60000);
   
 });
 </script></html>
