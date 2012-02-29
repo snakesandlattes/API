@@ -2,11 +2,16 @@
 <link rel="stylesheet" href="jquery.ui.theme.css"/>
 <link rel="stylesheet" href="jquery.ui.datepicker.css"/>
 <style>
-  body  { font-family: arial; }
-  label { display:block; min-width: 120px; float: left;}
-  li    { list-style-type: none; line-height: 2.0; }
-  .hr   { border-top:solid #000 1px; width: 380px; margin-top:8px; margin-bottom:8px; }
-  #responseText { color: #686; }
+  body        { font-family: arial; }
+  label       { display:block; min-width: 120px; float: left;}
+  li          { list-style-type: none; line-height: 2.0; }
+  .hr         { border-top:solid #000 1px; width: 380px; margin-top:8px; margin-bottom:8px; }
+  #SUCCESS    { color: #686; }
+  #FAIL       { color: #686; }
+  
+  #backbar      { display: none; }
+  #submitbar    { display: block; }
+  #responseText { width: 380px; }
 </style>
 <script type='text/javascript' src='jquery-1.7.1.min.js'></script>
 <script type='text/javascript' src='jquery-ui-1.8.18.custom-datepickeronly.min.js'></script>
@@ -108,10 +113,17 @@
   
   <li>
   <label>&nbsp;</label>
-  <input type='button' value='Try Booking' id='submit' onclick="validateAndSend()"/> &mdash; <input type='reset' id='reset'/><br/>
+  <div id='submitbar'>
+    <input type='button' value='Try Booking' id='submit' onclick="validateAndSend()"/> &mdash; <input type='reset' id='reset'/><br/>
+  </div>
+  <div id='backbar'>
+    <input type='button' value='Back' onclick="window.history.go(-1)"/><br/>
+  </div>
+  <li>
   <div id='responseText'></div>
   </li>
-  </ul>
+  </li>
+  </ul>  
   
   </form>
   
@@ -119,20 +131,18 @@
 
 var APIURL="http://snakesandlattesapi.appspot.com";
 
-// Need this for the JSONP callback!
-function ADDEVENTS(d){
-  for(var i=0; i<d.length; i++)
-    $('#calendar').fullCalendar('renderEvent', d[i]);
-}
-
 var BOOK={
-  FAIL:function(message) { $('#responseText').text(message.text); },
+  FAIL:function(message) {
+    $('#responseText').html("<div id='FAIL'>"+message.text+"</div>");
+    $('#submitbar').show();
+    $('#backbar').hide();
+  },
   SUCCESS:function() {
-    $('#responseText').text(
-      'Booking request sent successfully! We\'ll send you a confirmation email shortly!'
+    $('#responseText').html(
+      "<div id='FAIL'>Booking request sent successfully! We\'ll send you a confirmation email shortly!</div>"
     );
-    $('#submit')[0].disabled=true;
-    $('#reset')[0].disabled=true;
+    $('#submitbar').hide();
+    $('#backbar').show();
   }
 };
 
@@ -204,6 +214,15 @@ function validateAndSend(){
       remindViaSMS:       optionalFields.remindViaSMS,
       remindViaEmail:     optionalFields.remindViaEmail
       
+    },
+    beforeSend:function(){
+      $('#submitbar').hide();
+      $('#responseText').html("<img src='images/66.gif' align='center'/>");
+    },
+    error:function(x,errorText){
+      $('#responseText').html("<div id='FAIL'>Uh oh! Something went wrong during the booking request! Try sending again! '"+errorText+"'</div>");
+      $('#submitbar').show();
+      $('#backbar').hide();
     }
   });
 }

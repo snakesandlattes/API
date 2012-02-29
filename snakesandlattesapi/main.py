@@ -11,6 +11,11 @@ from google.appengine.ext import db
 ################################################################################
 # Models.
 
+class StaffShift(db.Model):
+  start=          db.DateTimeProperty(required=True)
+  end=            db.DateTimeProperty(required=True)
+
+
 class Customer(db.Model):
   name=           db.StringProperty(required=True)
   email=          db.EmailProperty(required=True)
@@ -141,7 +146,7 @@ class Schedule:
           # convert from GMT (unix timestamp) to EST/EDT
           'start':    (r.date+datetime.timedelta(hours=-5)).isoformat(),
           'allDay':   False,
-          'editable': True,
+          'editable': False,
           'end':      (r.date+datetime.timedelta(hours=-5,minutes=+30)).isoformat(),
         })
       HEADER('Content-Type','application/json')
